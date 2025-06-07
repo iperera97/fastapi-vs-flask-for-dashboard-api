@@ -1,0 +1,28 @@
+# Base image
+FROM python:3.10-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y build-essential libpq-dev curl && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# copy required modules
+COPY flask_app .
+COPY pytest.ini .
+COPY common /app/common
+COPY datacreator /app/datacreator
+COPY tests /app/tests
+
+# Expose Flask app port
+EXPOSE 8000
+
+# Run Flask app using Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers=1", "--threads=3", "--timeout=60", "app:app"]
+

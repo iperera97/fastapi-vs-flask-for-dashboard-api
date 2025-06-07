@@ -1,0 +1,64 @@
+services:
+  flask_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    container_name: flask_app
+    ports:
+      - "3000:8000"
+    environment:
+      DB_NAME: test
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_HOST: db
+      DB_PORT: 5432
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1024M"
+  
+  fastapi_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    container_name: fastapi_app
+    ports:
+      - "3001:8000"
+    environment:
+      DB_NAME: test
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1024M"
+
+  db:
+    image: postgres:latest
+    container_name: analytics_db
+    restart: always
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: "8192M"
+volumes:
+  pgdata:
